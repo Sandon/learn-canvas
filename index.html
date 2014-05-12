@@ -6,7 +6,7 @@
     <!--[if lt IE 9]>
         <script type="text/javascript" src="Flashcanvas/flashcanvas.js"></script>
     <![endif]-->
-    <script type="text/javascript" src="Flashcanvas/canvas2png.js"></script>
+    <!--<script type="text/javascript" src="Flashcanvas/canvas2png.js"></script>-->
     <script type="text/javascript" src="jquery-1.9.0.js"> </script>
 </head>
 <body>
@@ -20,6 +20,7 @@
     <a href="#" id="save-as-img">save as img</a>
 </div>
 
+
 <script type="text/javascript">
     //window.addEventListener('load',eventWindowLoaded,false);
     $(function(){
@@ -29,23 +30,55 @@
         canvasApp();
         initSaveAsImg();
     }
-    var canvas=document.getElementById("canvas");
+
     function canvasApp(){
-        /*var canvas = document.createElement("canvas");
-        document.getElementById("target").appendChild(canvas);
+        //var canvas = document.createElement("canvas");
+        //document.getElementById("target").appendChild(canvas);
+        var canvas=document.getElementById("canvas");
         if (typeof FlashCanvas != "undefined") {
             FlashCanvas.initElement(canvas);
-        }*/
+        }
+        //var canvas=document.getElementById("canvas");
         var context=canvas.getContext("2d");
         var ready={
-            testSaveRestore:function(){
-                context.strokeStyle="#fff";
-                context.save();
-                context.strokeStyle="#000";
+            tryStrokeStyle:function(){
+                context.globalAlpha=1;
+                //context.opacity=1;
+                context.strokeStyle="red";
+                context.moveTo(10,10);
+                context.lineTo(100,10);
+                context.stroke();
 
-                console.log("before restored:"+context.strokeStyle);//#000
+
+                context.strokeStyle="green";
+                //context.moveTo(10,30);
+                //context.lineTo(100,30);
+                context.stroke();
+
+                context.beginPath();
+                context.strokeStyle="green";
+                context.moveTo(10,50);
+                context.lineTo(100,50);
+                context.stroke();
+            },
+            testSaveRestore:function(){
+                context.fillStyle="blue";
+                context.save();
+
+                context.fillStyle="red";
+                context.save();
+
+                context.fillStyle="#000";
+                context.fillRect(10,10,100,10);
+                console.log("before restored:"+context.fillStyle);//#000
+
                 context.restore();
-                console.log("after restored:"+context.strokeStyle);//#fff
+                context.fillRect(10,30,100,10);
+                console.log("after first restored:"+context.fillStyle);//red
+
+                context.restore();
+                context.fillRect(10,50,100,10);
+                console.log("after second restored:"+context.fillStyle);//blue
             },
             useClosePath:function(){
                 context.beginPath();
@@ -165,9 +198,8 @@
                 context.beginPath();
                 context.strokeStyle="red";
                 context.lineWidth=5;
-                context.arc(100,100,100,(Math.PI/180)*0,(Math.PI/180)*360,false);
+                context.arc(100,100,100,0,(Math.PI/180)*360,false);
                 context.stroke();
-                context.closePath();
 
                 context.restore();
 
@@ -217,20 +249,190 @@
                 //context.globalCompositeOperation="lighter";
                 //context.fillRect(1,151,30,30);
             },
+            tryFillStyle:function(){
+                context.fillStyle="black";
+                context.arc(100,100,50,0,2*Math.PI,true);
+                context.fill();
+
+                //context.beginPath();
+                context.fillStyle="white";
+                //context.fillRect(200,200,50,50);
+                context.arc(200,200,50,0,2*Math.PI,true);
+                context.fill();
+            },
+            tryTransform:function(){
+                //context.transform(a,b,c,d,e,f)
+                //a:水平缩放
+                //b:水平倾斜
+                //c:垂直倾斜
+                //d:垂直缩放
+                //e:水平移动
+                //f:垂直移动
+                context.fillStyle="red";
+                context.fillRect(0,0,100,200);
+
+                context.transform(1,0,0,1,30,10);
+                context.fillStyle="yellow";
+                context.fillRect(0,0,100,200);
+
+                context.transform(1,0,0,1,30,10);
+                context.fillStyle="blue";
+                context.fillRect(0,0,100,200);
+            },
+            tryTransformWithParaScaleAndMove:function(){
+                context.transform(2,0,0,2,0,0);
+                context.fillStyle="yellow";
+                context.fillRect(0,0,50,50);
+
+                /*context.transform(2,0,0,2,40,0);
+                context.fillStyle="blue";
+                context.fillRect(0,0,50,50);*/
+
+                //VS
+
+                context.transform(2,0,0,2,0,0);
+                context.fillStyle="blue";
+                context.fillRect(40,0,50,50);
+
+                //VS
+
+                /*context.transform(2,0,0,2,10,0);
+                context.transform(2,0,0,2,40,0);
+                context.fillStyle="blue";
+                context.fillRect(0,0,50,50);*/
+
+                // 结论：
+                // 1. transform()的变换是在已经调用的rotate()、scale()、translate()、transform()所产生的变换上进行的；
+                //    而且是从下之上以此累积变换；
+                // 2. 但同一次transform()调用设置的位移、缩放、倾斜效果间不会影响；可以理解为先进行缩放，再进行位移；
+            },
+            trySetTransform:function(){
+                context.fillStyle="red";
+                context.fillRect(0,0,100,200);
+
+                context.setTransform(1,0,0,1,30,10);
+                context.fillStyle="yellow";
+                context.fillRect(0,0,100,200);
+
+                context.setTransform(1,0,0,1,40,10);
+                context.fillStyle="blue";
+                context.fillRect(0,0,100,200);
+            },
+            trySetTransformWithParaSkew:function(){
+                context.fillStyle="blue";
+                context.fillRect(100,40,50,50);
+
+                context.setTransform(1,0,0.5,1,0,0);
+                context.fillStyle="blue";
+                context.fillRect(100,100,50,50);
+
+                context.setTransform(1,0,0,1,0,0);
+                context.fillStyle="blue";
+                context.fillRect(40,160,50,50);
+
+                context.setTransform(1,0.5,0,1,0,0);
+                context.fillStyle="blue";
+                context.fillRect(100,160,50,50);
+            },
+            tryRotate:function(){
+
+                context.fillStyle="blue";
+                context.fillRect(40,40,50,50);
+
+                context.rotate(22.5*Math.PI/180);
+
+                context.fillStyle="red";
+                context.fillRect(100,100,50,50);
+
+                context.rotate(22.5*Math.PI/180);
+
+                context.fillRect(160,160,50,50);
+
+                // 总结：
+                // 1. 变换累积
+                // 2. 只会影响方法调用之后的绘图
+            },
+
+            luckyCircle:function(){
+                var center={x:200,y:200};
+                var radius=100;
+                var numOfParts=16;
+                var pieceAngle=(360/numOfParts)*(Math.PI/180);
+                var colors=["red","pink","black","green","#9f0187","#788f7f"];
+                var luckyAngle=0;
+                var circleBtnRadius=20;
+                var arrowLength=80;
+
+                //lucky circle background
+                context.fillStyle="transparent";
+                context.arc(center.x,center.y,radius,0,2*Math.PI,true);
+                context.fill();
+
+                //parts
+                for (var index=0;index!=numOfParts;index++){
+                    context.beginPath();
+                    var startAngle=index*pieceAngle;
+                    var endAngle=(index+1)*pieceAngle;
+                    context.fillStyle=colors[index%(colors.length)];
+                    //console.log(startAngle+","+endAngle+","+context.fillStyle);
+                    context.moveTo(center.x,center.y);
+                    var startArcPointX=center.x+radius*Math.cos(startAngle);
+                    var startArcPointY=center.y+radius*Math.sin(startAngle);
+                    context.lineTo(startArcPointX,startArcPointY);
+                    context.arc(center.x,center.y,radius,startAngle,endAngle,false);
+                    context.closePath();
+                    context.fill();
+                    context.beginPath();
+                }
+
+                //central circle button
+                context.beginPath();
+                context.arc(center.x,center.y,circleBtnRadius,0,2*Math.PI,false);
+                context.fillStyle="yellow";
+                context.fill();
+
+                //arrow
+                context.beginPath();
+                var biggerAngle=(luckyAngle+20)*Math.PI/180;
+                var biggerAgPtX=Math.cos(biggerAngle)*(circleBtnRadius)+center.x;
+                var biggerAgPtY=Math.sin(biggerAngle)*(circleBtnRadius)+center.y;
+                context.moveTo(biggerAgPtX,biggerAgPtY);
+                var smallerAngle=(luckyAngle-20)*Math.PI/180;
+                //context.lineTo(Math.cos(smallerAngle)*(circleBtnRadius)+center.x,Math.sin(smallerAngle)*(circleBtnRadius)+center.y);
+                context.arc(center.x,center.y,circleBtnRadius,(luckyAngle+20)*Math.PI/180,(luckyAngle-20)*Math.PI/180,true);
+                context.lineTo(center.x+arrowLength*Math.cos(luckyAngle),center.y+arrowLength*Math.sin(luckyAngle));
+                context.closePath();
+                context.fillStyle="#888888";
+                context.fill();
+
+
+                //context.save();
+
+                //context.beginPath();
+
+            }
         }
 
         drawScreen();
         function drawScreen(){
-
+            //ready.tryStrokeStyle();
             //ready.testSaveRestore();
             //ready.useClosePath();
-            ready.useLineTo();
+            //ready.useLineTo();
             //ready.useArc();
             //ready.useArcTo();
             //ready.useQuadraticCurveTo();
             //ready.useBizierCurveTo();
             //ready.useClip();
             //ready.useGlobalCompositeOperation();
+            //ready.tryFillStyle();
+            //ready.tryTransform();
+            //ready.tryTransformWithParaScaleAndMove();
+
+            //ready.trySetTransform();
+            //ready.trySetTransformWithParaSkew();
+            ready.tryRotate();
+            //ready.luckyCircle();
         }
     }
     function initSaveAsImg(){
