@@ -352,7 +352,13 @@
                 // 1. 变换累积
                 // 2. 只会影响方法调用之后的绘图
             },
-
+            tryTranslate:function(){
+                var angle=45*Math.PI/180;
+                context.translate(125,125);
+                context.rotate(angle);
+                context.fillStyle="red";
+                context.fillRect(100,100,50,50);
+            },
             luckyCircle:function(){
                 var center={x:200,y:200};
                 var radius=100;
@@ -428,7 +434,6 @@
             //ready.tryFillStyle();
             //ready.tryTransform();
             //ready.tryTransformWithParaScaleAndMove();
-
             //ready.trySetTransform();
             //ready.trySetTransformWithParaSkew();
             ready.tryRotate();
