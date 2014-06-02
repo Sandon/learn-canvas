@@ -11,8 +11,8 @@
 </head>
 <body>
 <div class="wrap">
-    <div style="border: 1px solid green;width: 500px;height: 500px;" id="target">
-        <canvas width="500" height="500" id="canvas">
+    <div style="border: 1px solid green;width: 1000px;height: 500px;" id="target">
+        <canvas width="1000" height="500" id="canvas">
             your browse not support canvas
         </canvas>
 
@@ -353,12 +353,97 @@
                 // 2. 只会影响方法调用之后的绘图
             },
             tryTranslate:function(){
+                context.beginPath();
+                context.fillStyle="green";
+                context.fillRect(100,100,50,50);
+
+                //context.fillRect(151,151,50,50);
+
+                context.translate(151,151);
+                context.fillRect(0,0,50,50);
+
+            },
+            tryRotateWithTranslate:function(){
                 var angle=45*Math.PI/180;
                 context.translate(125,125);
                 context.rotate(angle);
                 context.fillStyle="red";
-                context.fillRect(100,100,50,50);
+                context.fillRect(-25,-25,50,50);
             },
+            tryLinearGradient:function(){
+                var linearGradient=context.createLinearGradient(0,0,100,20);
+
+                linearGradient.addColorStop(0,"red");
+                linearGradient.addColorStop(0.5,"green");
+                linearGradient.addColorStop(1,"blue");
+
+                context.fillStyle=linearGradient;
+                context.fillRect(0,0,200,100);
+
+                context.lineWidth=1;
+                context.strokeStyle=linearGradient;
+                context.strokeRect(0,102,200,100);
+            },
+            tryRadialGradient:function(){
+                var radialGradient=context.createRadialGradient(50,50,25,50,50,100);
+
+                radialGradient.addColorStop(0,"red");
+                radialGradient.addColorStop(0.5,"green");
+                radialGradient.addColorStop(1,"blue");
+
+                //context.fillStyle=radialGradient;
+                //context.fillRect(0,0,200,200);
+
+                context.strokeStyle=radialGradient;
+                context.strokeRect(2,2,200,200);
+            },
+            tryPattern:function(){
+                var fillImg=new Image();
+                fillImg.src="http://i05.c.aliimg.com/cms/upload/2014/766/259/1952667_587099388.jpg";
+                fillImg.onload=function(){
+                    var pattern=context.createPattern(fillImg,"repeat");
+                    context.fillStyle=pattern;
+                    //context.fillRect(1,1,300,100);
+
+                    context.fillRect(1,101,300,100);
+
+                    context.strokeStyle=pattern;
+                    context.lineWidth=10;
+                    context.strokeRect(1,206,300,100);
+                }
+            },
+            tryShadow:function(){
+                context.shadowOffsetX=5;
+                context.shadowOffsetY=5;
+                context.shadowBlur=5;
+                context.shadowColor="red";
+
+                context.fillStyle="green";
+                context.fillRect(10,10,100,100);
+            },
+            tryDrawImage:function(){
+                var img;
+                if (typeof FlashCanvas != "undefined"){
+                    //console.log("here");
+                    img={};
+                    img.src="./img/1.jpg";
+                    //context.drawImage(img,30,0,30,30,10,10,100,100);
+                    //console.log(img);
+                    context.drawImage(img,30,0,30,30,10,10,100,100);
+                }else{
+                    img=new Image();
+                    img.src="./img/1.jpg";
+                    img.onload=function(){
+                        context.drawImage(img,30,0,30,30,10,10,100,100);
+                    }
+                }
+
+            },
+            tryText:function(){
+                context.font="20px";
+                context.strokeText("haha",100,100);
+            },
+
             luckyCircle:function(){
                 var center={x:200,y:200};
                 var radius=100;
@@ -416,6 +501,85 @@
 
                 //context.beginPath();
 
+            },
+            energyBar:function(){
+                var drawBar=function(startX,endX,Y,cornerRadius,stopColor){
+                    context.beginPath();
+                    context.moveTo(startX,Y+cornerRadius);
+                    context.arc(startX,Y,cornerRadius,0.5*Math.PI,1.5*Math.PI,false);
+                    context.lineTo(endX,Y-cornerRadius);
+                    context.arc(endX,Y,cornerRadius,-0.5*Math.PI,0.5*Math.PI,false);
+                    context.closePath();
+
+                    var linearGd=context.createLinearGradient(startX,Y-cornerRadius,startX,Y+cornerRadius);
+                    linearGd.addColorStop(0,stopColor.begin);
+                    linearGd.addColorStop(0.5,stopColor.half);
+                    linearGd.addColorStop(1,stopColor.end);
+                    context.fillStyle=linearGd;
+
+                    context.fill();
+                };
+                var cleanBg=function(){
+                    context.fillStyle="#fff";
+                    context.fillRect(0,0,500,500);
+                };
+
+
+                var drawBtn=function(centerX,centerY,radius,textOpt,stopColor){
+                    var gr=context.createRadialGradient(centerX,centerY,radius/8,centerX,centerY,radius);
+                    gr.addColorStop(0,stopColor.start);
+                    gr.addColorStop(0.5,stopColor.middle);
+                    gr.addColorStop(1,stopColor.end);
+
+                    context.fillStyle=gr;
+                    context.beginPath();
+                    context.arc(centerX,centerY,radius,0,2*Math.PI,false);
+                    context.fill();
+                };
+
+                var areaAddEventListener=function(event,area,fn){
+                    //canvas.addEventListener()
+                }
+
+                var startX=50,Y=100,endX=350,outerRadius=20,innerRadius=16,innerNowX=10,increHigh=20,increLow= 12,xIncre= increLow,xMiddle=(startX+endX)/2;
+                var outerStopColor={begin:"#d9d6d6",half:"#bdbcbc",end:"#9c9b9b"};
+                var innerStopColor={begin:"#fab59b",half:"#fa7949",end:"#fc1a02"};
+                var btnSmallRadius=50,btnBigRadius=60,btnRadiusInc=2;
+
+                var update=function(){
+                    //clean up the whole canvas
+                    cleanBg();
+
+                    //draw the background bar
+                    drawBar(startX,endX,Y,outerRadius,outerStopColor);
+
+                    //draw the energy bar
+                    innerNowX+=xIncre;
+                    if(innerNowX>endX){
+                        xIncre=-xIncre;
+                        innerNowX=endX;
+                    }
+                    else if(innerNowX<startX){
+                        innerNowX=startX;
+                        xIncre=-xIncre;
+                    }
+                    else if(innerNowX>xMiddle){
+                        if(xIncre>0)
+                            xIncre=increHigh;
+                        else
+                            xIncre=-increHigh;
+                    }else if(innerNowX<xMiddle){
+                        if(xIncre>0)
+                            xIncre=increLow;
+                        else
+                            xIncre=-increLow;
+                    }
+                    drawBar(startX,innerNowX,Y,innerRadius,innerStopColor);
+
+                    //draw the button
+                    drawBtn(500,100,50,{text:"go",font:"20px"},{begin:"#78fa90",middle:"#3cfa60",end:"#03fd32"});
+                }
+                setInterval(update,50);
             }
         }
 
@@ -436,8 +600,18 @@
             //ready.tryTransformWithParaScaleAndMove();
             //ready.trySetTransform();
             //ready.trySetTransformWithParaSkew();
-            ready.tryRotate();
+            //ready.tryRotate();
+            //ready.tryTranslate();
+            //ready.tryRotateWithTranslate();
+            //ready.tryLinearGradient();
+            //ready.tryRadialGradient();
+            //ready.tryPattern();
+            //ready.tryShadow();
+            ready.tryDrawImage();
+            //ready.tryText();
+
             //ready.luckyCircle();
+            //ready.energyBar();
         }
     }
     function initSaveAsImg(){
