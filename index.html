@@ -218,6 +218,23 @@
 
                 context.stroke();
             },
+            tryGlobalAlpha:function(){
+                context.lineWidth=10;
+                context.strokeStyle="black";
+
+                context.moveTo(10,10);
+                context.lineTo(100,10);
+                context.stroke();
+
+                context.globalAlpha=0.1;
+                context.moveTo(10,30);
+                context.lineTo(100,30);
+                context.stroke();
+
+                context.moveTo(10,60);
+                context.lineTo(100,60);
+                context.stroke();
+            },
             useGlobalCompositeOperation:function(){
                 //background rect
                 context.fillStyle="green";//bg1:green
@@ -449,6 +466,22 @@
                 context.fillStyle="red";
                 context.fillText("haha",100,200);
             },
+            tryIsPonitInPath:function(){
+                context.rect(10,10,100,100);
+                if(context.isPointInPath(20,20)){
+                    console.log("in rect");
+                }else{
+                    console.log("not in rect");
+                }
+
+                context.beginPath();
+                context.arc(350,350,50,0,2*Math.PI,false);
+                if(context.isPointInPath(350,360)){
+                    console.log("in circle");
+                }else{
+                    console.log("not in circle");
+                }
+            },
 
             luckyCircle:function(){
                 var center={x:200,y:200};
@@ -531,44 +564,115 @@
                 };
 
 
-                var drawBtn=function(centerX,centerY,radius,textOpt,stopColor,scale){
-                    var gr=context.createRadialGradient(centerX,centerY,radius/8,centerX,centerY,radius);
-                    gr.addColorStop(0,stopColor.begin);
-                    gr.addColorStop(0.5,stopColor.middle);
-                    gr.addColorStop(1,stopColor.end);
-
-
+                var drawBtn=function(centerX,centerY,radius,options,scale,rotate){
                     context.setTransform(scale,0,0,scale,centerX,centerY);
-                    //context.translate(centerX,centerY);
-                    //context.scale(scale,scale);
+                    context.rotate(rotate);
+
+                    if(options.type=="text"){
+                        var gr=context.createRadialGradient(0,0,radius/8,0,0,radius);
+                        gr.addColorStop(0,options.stopColor.begin);
+                        gr.addColorStop(0.5,options.stopColor.middle);
+                        gr.addColorStop(1,options.stopColor.end);
+
+                        context.beginPath();
+                        context.fillStyle=gr;
+                        context.arc(0,0,radius,0,2*Math.PI,false);
+                        context.fill();
+
+                        context.beginPath();
+                        context.font=options.textOpt.font;
+                        //context.font="30px Georgia";
+                        context.fillStyle=options.textOpt.fontStyle;
+                        //context.strokeText(textOpt.text,0,0);
+                        context.fillText(options.textOpt.text,-12,1);
+                    }else{
+                        var img;
+                        if (typeof FlashCanvas != "undefined"){
+                            img={};
+                            img.src=options.imgOpt.url;
+                            context.drawImage(img,-radius,-radius,2*radius,2*radius);
+                        }else{
+                            img=new Image();
+                            img.src=options.imgOpt.url;
+                            context.drawImage(img,-radius,-radius,2*radius,2*radius);
+                        }
+                    }
 
 
-                    context.fillStyle=gr;
-                    context.beginPath();
-                    context.arc(0,0,radius,0,2*Math.PI,false);
-                    context.fill();
-
-                    context.beginPath();
-                    context.font=textOpt.font;
-                    context.fontStyle=textOpt.fontStyle;
-                    context.strokeText(textOpt.text,0,0);
-                    //context.fillText(textOpt.text,0,0);
-
-                    //context.translate(0,0);
                     context.setTransform(1,0,0,1,0,0);
 
                 };
 
-                var areaAddEventListener=function(event,area,fn){
-                    //canvas.addEventListener()
-                }
+                var areaAddEventListener=function(eventType,area,fn){
+                    var $canvas=$(canvas);
+                    if("click"==eventType||"mousedown"==eventType||"mouseup"==eventType){
+                        $canvas.bind(eventType,{"area":area,"fn":fn},function(e){
+                            var cTargetX=e.clientX-$canvas.offset().left,cTargetY=e.clientY-$canvas.offset().top;
+                            context.save();
+                            context.arc(e.data.area.x,e.data.area.y,e.data.area.radius,0,2*Math.PI,false);
+                            if(context.isPointInPath(cTargetX,cTargetY)){
+                                e.data.fn();
+                            }
+                            context.restore();
+                        });
+                    }else if("mouseover"==eventType||"mouseout"==eventType||"mousemove"==eventType){
+                        $canvas.bind("mousemove",{"area":area,"fn":fn},function(e){
+                            var cTargetX=e.clientX-$canvas.offset().left,cTargetY=e.clientY-$canvas.offset().top;
+                            context.save();
+                            context.beginPath();
+                            context.arc(e.data.area.x,e.data.area.y,e.data.area.radius,0,2*Math.PI,false);
+
+                            if(context.isPointInPath(cTargetX,cTargetY)){
+                                if(e.data.area.lastIsNotIn==undefined){
+                                    e.data.area.lastIsNotIn=false;
+                                    return;
+                                }
+
+                                if(true==e.data.area.lastIsNotIn&&"mouseover"==eventType)
+                                    e.data.fn();
+                                else if(false==e.data.area.lastIsNotIn&&"mousemove"==eventType)
+                                    e.data.fn();
+
+                                e.data.area.lastIsNotIn=false;
+                                //console.log(e.data.area.lastIsNotIn);
+                            }else{
+                                if(e.data.area.lastIsNotIn==undefined){
+                                    e.data.area.lastIsNotIn=true;
+                                    return;
+                                }
+                                //console.log(e.data.area.lastIsNotIn);
+                                if(false==e.data.area.lastIsNotIn&&"mouseout"==eventType)
+                                    e.data.fn();
+
+                                e.data.area.lastIsNotIn=true;
+                            }
+                            context.strokeStyle="green";
+                            //context.stroke();
+                            context.beginPath();
+                            context.restore();
+                        });
+                    }
+
+                };
+
 
                 //configuration parameters for energy bar
-                var startX=50,Y=100,endX=350,outerRadius=20,innerRadius=16,innerNowX=10,increHigh=20,increLow= 12,xIncre= increLow,xMiddle=(startX+endX)/2;
+                var startX=50,Y=100,endX=350,outerRadius=20,innerRadius=16,innerNowX=10,speedHigh=30,speedLow= 12,speed= speedLow,speedInc=20;
                 var outerStopColor={begin:"#d9d6d6",half:"#bdbcbc",end:"#9c9b9b"};
                 var innerStopColor={begin:"#fab59b",half:"#fa7949",end:"#fc1a02"};
+                var barLenght=endX-startX,halfBarLenght=barLenght/2,barEnergy=0;
+                var isBarChanging=true;
+
                 //configuration parameters for btn
-                var btnBigScale=1.2,btnScaleInc=0.05,btnNowScale=1,btnNowRadius=50,btnCenterX=500,btnCenterY=100;
+                var btnNowRadius=50,btnCenterX=500,btnCenterY=100,btnDefaultRadius=btnNowRadius;
+                var isBtnScaling=true,btnBigScale=1.2,btnScaleInc=0.05,btnNowScale=1;
+                var isBtnRotate=false,btnNowAngle= 0,btnAngleInc=0.5*Math.PI;
+                var options={};
+                options.type="img";
+                options.textOpt={text:"go",font:"30px Georgia",fontStyle:"red"};
+                options.stopColor={begin:"#78fa90",middle:"#3cfa60",end:"#03fd32"};
+                options.imgOpt={url:"img/btn.jpg"};
+
 
                 var update=function(){
                     //clean up the whole canvas
@@ -578,32 +682,82 @@
                     drawBar(startX,endX,Y,outerRadius,outerStopColor);
 
                     //draw the energy bar
-                    innerNowX+=xIncre;
-                    if(innerNowX>endX){
-                        xIncre=-xIncre;
-                        innerNowX=endX;
+                    if(isBarChanging){
+                        if(speed>0)
+                            speed=barEnergy*speedInc+speedLow;
+                        else
+                            speed=-(barEnergy*speedInc+speedLow);
+                        innerNowX+=speed;
+                        if(innerNowX>endX){
+                            speed=-speed;
+                            innerNowX=endX;
+                        }
+                        else if(innerNowX<startX){
+                            innerNowX=startX;
+                            speed=-speed;
+                        }
                     }
-                    else if(innerNowX<startX){
-                        innerNowX=startX;
-                        xIncre=-xIncre;
-                    }
-
+                    barEnergy=(innerNowX-startX)/barLenght;
                     drawBar(startX,innerNowX,Y,innerRadius,innerStopColor);
 
                     //draw the button
-                    btnNowScale+=btnScaleInc;
-                    if(btnNowScale>=btnBigScale){
+                    if(isBtnScaling){
+                        btnNowScale+=btnScaleInc;
+                        if(btnNowScale>=btnBigScale){
+                            btnNowScale=btnBigScale;
+                            btnScaleInc*=-1;
+                        }else if(btnNowScale<=1){
+                            btnNowScale=1;
+                            btnScaleInc*=-1;
+                        }
+                    }else{
                         btnNowScale=btnBigScale;
-                        btnScaleInc*=-1;
-                    }else if(btnNowScale<=1){
-                        btnNowScale=1;
-                        btnScaleInc*=-1;
+                        btnScaleInc=btnScaleInc?-1*btnScaleInc:btnScaleInc;
                     }
 
-                    drawBtn(btnCenterX,btnCenterY,btnNowRadius,{text:"go",font:"30px",fontStyle:"red"},{begin:"#78fa90",middle:"#3cfa60",end:"#03fd32"},btnNowScale);
+                    if(isBtnRotate){
+                        btnNowAngle+=btnAngleInc;
+                    }else{
+                        btnNowAngle=0;
+                    }
+
+                    drawBtn(btnCenterX,btnCenterY,btnNowRadius,options,btnNowScale,btnNowAngle);
                 }
-                setInterval(update,100);
-                update();
+                setInterval(update,50);
+
+
+                var areaMouseoverHandler=function(){
+                    isBtnScaling=false;
+                    isBtnRotate=false;
+                    isBarChanging=true;
+                    speedInc=60;
+                    console.log("mouseover");
+                };
+                var areaMouseoutHandler=function(){
+                    isBtnScaling=true;
+                    isBtnRotate=false;
+                    isBarChanging=true;
+                    speedInc=20;
+                    console.log("mouseout");
+                };
+                var areaClickHandler=function(){
+
+                };
+                var areaMousedownHandler=function(){
+                    isBtnScaling=false;
+                    isBtnRotate=true;
+                    isBarChanging=true;
+                };
+                var areaMouseupHandler=function(){
+                    isBtnScaling=false;
+                    isBtnRotate=false;
+                    isBarChanging=false;
+                    console.log(barEnergy);
+                };
+                areaAddEventListener("mouseover",{x:btnCenterX,y:btnCenterY,radius:btnDefaultRadius*btnBigScale},areaMouseoverHandler);
+                areaAddEventListener("mouseout",{x:btnCenterX,y:btnCenterY,radius:btnDefaultRadius*btnBigScale},areaMouseoutHandler);
+                areaAddEventListener("mousedown",{x:btnCenterX,y:btnCenterY,radius:btnDefaultRadius*btnBigScale},areaMousedownHandler);
+                areaAddEventListener("mouseup",{x:btnCenterX,y:btnCenterY,radius:btnDefaultRadius*btnBigScale},areaMouseupHandler);
             }
         }
 
@@ -618,6 +772,7 @@
             //ready.useQuadraticCurveTo();
             //ready.useBizierCurveTo();
             //ready.useClip();
+            //ready.tryGlobalAlpha();
             //ready.useGlobalCompositeOperation();
             //ready.tryFillStyle();
             //ready.tryTransform();
@@ -632,10 +787,11 @@
             //ready.tryPattern();
             //ready.tryShadow();
             //ready.tryDrawImage();
-            ready.tryText();
+            //ready.tryText();
+            //ready.tryIsPonitInPath();
 
             //ready.luckyCircle();
-            //ready.energyBar();
+            ready.energyBar();
         }
     }
     function initSaveAsImg(){
