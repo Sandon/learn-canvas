@@ -41,27 +41,27 @@
         //var canvas=document.getElementById("canvas");
         var context=canvas.getContext("2d");
         var ready={
-            tryStrokeStyle:function(){
-                //context.globalAlpha=1;
-                //context.opacity=1;
+            tryBeginPath:function(){
+                context.lineWidth=2;
                 context.strokeStyle="green";
                 context.moveTo(10,10);
                 context.lineTo(100,10);
                 context.stroke();
 
 
-                //context.strokeStyle="green";
-                //context.moveTo(10,30);
-                //context.lineTo(100,30);
-                //context.stroke();
-                //context.stroke();
+                /*context.strokeStyle="red";
+                context.moveTo(10,30);
+                context.lineTo(100,30);
+                context.stroke();*/
 
                 context.beginPath();
-                context.lineWidth=2;
                 context.strokeStyle="green";
                 context.moveTo(10,50);
                 context.lineTo(100,50);
                 context.stroke();
+
+                //context.arc(300,300,50,0,2*Math.PI,true);
+                //context.stroke();
             },
             testSaveRestore:function(){
                 context.fillStyle="blue";
@@ -763,7 +763,7 @@
 
         drawScreen();
         function drawScreen(){
-            //ready.tryStrokeStyle();
+            ready.tryBeginPath();
             //ready.testSaveRestore();
             //ready.useClosePath();
             //ready.useLineTo();
@@ -791,7 +791,7 @@
             //ready.tryIsPonitInPath();
 
             //ready.luckyCircle();
-            ready.energyBar();
+            //ready.energyBar();
         }
     }
     function initSaveAsImg(){
