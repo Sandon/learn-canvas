@@ -17,7 +17,7 @@
         </canvas>
 
     </div>
-    <a href="#" id="save-as-img">save as img</a>
+    <a href="#" id="save-as-img" style="display: none;">save as img</a>
 </div>
 
 
@@ -253,12 +253,12 @@
                 //context.fillRect(1,31,30,30);
 
                 //destination-in
-                context.globalCompositeOperation="destination-in";
-                context.fillRect(1,61,30,30);
+                //context.globalCompositeOperation="destination-in";
+                //context.fillRect(1,61,30,30);
 
                 //destination-out
-                //context.globalCompositeOperation="destination-out";
-                //context.fillRect(1,91,30,30);
+                context.globalCompositeOperation="destination-out";
+                context.fillRect(1,91,330,30);
 
                 //destination-over
                 //context.globalCompositeOperation="destination-over";
@@ -297,6 +297,12 @@
                 context.transform(1,0,0,1,30,10);
                 context.fillStyle="blue";
                 context.fillRect(0,0,100,200);
+
+                /*context.transform(2,0,0,2,0,0);
+                context.fillRect(0,0,10,10);
+
+                context.transform(2,0,0,2,0,0);
+                context.fillRect(100,100,10,10);*/
             },
             tryTransformWithParaScaleAndMove:function(){
                 context.transform(2,0,0,2,0,0);
@@ -381,12 +387,16 @@
                 context.translate(151,151);
                 context.fillRect(0,0,50,50);
 
+                context.translate(-151,-151);
+                context.fillStyle="red";
+                context.fillRect(0,0,50,50);
             },
             tryRotateWithTranslate:function(){
                 var angle=45*Math.PI/180;
                 context.translate(125,125);
                 context.rotate(angle);
                 context.fillStyle="red";
+                //(100,100,50,50)
                 context.fillRect(-25,-25,50,50);
             },
             tryLinearGradient:function(){
@@ -443,11 +453,9 @@
             tryDrawImage:function(){
                 var img;
                 if (typeof FlashCanvas != "undefined"){
-                    //console.log("here");
                     img={};
                     img.src="./img/1.jpg";
                     //context.drawImage(img,30,0,30,30,10,10,100,100);
-                    //console.log(img);
                     context.drawImage(img,30,0,30,30,10,10,100,100);
                 }else{
                     img=new Image();
@@ -763,7 +771,7 @@
 
         drawScreen();
         function drawScreen(){
-            ready.tryBeginPath();
+            //ready.tryBeginPath();
             //ready.testSaveRestore();
             //ready.useClosePath();
             //ready.useLineTo();
@@ -775,7 +783,7 @@
             //ready.tryGlobalAlpha();
             //ready.useGlobalCompositeOperation();
             //ready.tryFillStyle();
-            //ready.tryTransform();
+            ready.tryTransform();
             //ready.tryTransformWithParaScaleAndMove();
             //ready.trySetTransform();
             //ready.trySetTransformWithParaSkew();
