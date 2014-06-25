@@ -490,6 +490,20 @@
                     console.log("not in circle");
                 }
             },
+            tryCanvasPixelAPI:function(){
+                context.fillStyle="red";
+                context.fillRect(10,10,300,300);
+
+                var imageData=context.createImageData(100,100);
+                imageData=context.getImageData(10,10,100,100);
+
+                for(var i= 3,size=imageData.data.length;i<size;i+=4 ){
+                    imageData.data[i]=100;
+                }
+
+                context.putImageData(imageData,310,310);
+                //context.putImageData(imageData,310,310,10,10,50,50);
+            },
 
             luckyCircle:function(){
                 var center={x:200,y:200};
@@ -783,7 +797,7 @@
             //ready.tryGlobalAlpha();
             //ready.useGlobalCompositeOperation();
             //ready.tryFillStyle();
-            ready.tryTransform();
+            //ready.tryTransform();
             //ready.tryTransformWithParaScaleAndMove();
             //ready.trySetTransform();
             //ready.trySetTransformWithParaSkew();
@@ -797,6 +811,7 @@
             //ready.tryDrawImage();
             //ready.tryText();
             //ready.tryIsPonitInPath();
+            ready.tryCanvasPixelAPI();
 
             //ready.luckyCircle();
             //ready.energyBar();
